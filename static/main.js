@@ -119,4 +119,3 @@ function submitGuess() {
   } else if (attempts >= maxAttempts) {
     setTimeout(() => alert(`❌ Out of tries! The word was ${secretWord}`), 150);
   }
-}
