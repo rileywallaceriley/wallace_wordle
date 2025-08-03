@@ -1,126 +1,107 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Wordle Clone</title>
-  <script src="/static/main.js" defer></script>
-  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
   <style>
     body {
       font-family: sans-serif;
-      background-color: #121213;
+      background: #121213;
       color: white;
-      padding: 20px;
-      padding-bottom: 180px;
       margin: 0;
+      padding: 0;
       text-align: center;
     }
+    h1 { margin-top: 20px; }
 
-    h1 {
-      margin-bottom: 10px;
+    #controls {
+      margin: 10px;
     }
 
+    #feedback {
+      display: grid;
+      grid-template-rows: repeat(6, auto);
+      gap: 8px;
+      margin: 20px auto;
+      width: 100%;
+      max-width: 320px;
+    }
+
+    .feedback-row {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 5px;
+    }
+
+    .tile {
+      background-color: #3a3a3c;
+      border: 2px solid #3a3a3c;
+      color: white;
+      font-size: 2rem;
+      font-weight: bold;
+      height: 3rem;
+      line-height: 3rem;
+      text-transform: uppercase;
+    }
+
+    .correct { background: #538d4e; }
+    .present { background: #b59f3b; }
+    .absent  { background: #3a3a3c; }
+
     #keyboard {
-      position: fixed;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      padding: 10px 0;
-      background: #121213;
-      z-index: 999;
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 5px;
-      max-width: 100%;
-      box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.6);
+      gap: 6px;
+      margin-bottom: 40px;
     }
 
-    .row {
+    .key-row {
       display: flex;
-      justify-content: center;
       gap: 4px;
     }
 
     .key {
-      flex: 1 1 0;
-      padding: 12px 0;
+      padding: 12px;
+      background: #818384;
+      color: white;
       border: none;
       border-radius: 4px;
-      background-color: #818384;
-      color: white;
-      font-weight: bold;
-      font-size: 16px;
-      cursor: pointer;
-      transition: transform 0.1s ease, background-color 0.3s ease;
-      user-select: none;
-    }
-
-    .key:active {
-      transform: scale(0.92);
-    }
-
-    .correct { background-color: #6aaa64 !important; }
-    .present { background-color: #c9b458 !important; }
-    .absent  { background-color: #3a3a3c !important; }
-
-    .feedback-row {
-      margin: 10px auto;
-      font-size: 2em;
-      letter-spacing: 10px;
-    }
-
-    .tile {
-      display: inline-block;
-      width: 40px;
-      height: 40px;
-      line-height: 40px;
-      border: 1px solid #555;
-      margin: 2px;
-      font-weight: bold;
+      font-size: 1rem;
+      width: 32px;
       text-align: center;
-      text-transform: uppercase;
-      font-size: 24px;
     }
 
-    @media screen and (max-width: 480px) {
-      .key {
-        width: 8vw;
-        height: 10vw;
-        font-size: 4.2vw;
-      }
+    .key.enter { width: 60px; }
+    .key.delete { width: 60px; }
 
-      .tile {
-        width: 14vw;
-        height: 14vw;
-        font-size: 6vw;
-        line-height: 14vw;
-        margin: 1vw;
-      }
+    @media (max-width: 480px) {
+      .tile { height: 2.5rem; line-height: 2.5rem; font-size: 1.5rem; }
+      .key { padding: 10px; width: 28px; font-size: 0.9rem; }
+      .key.enter, .key.delete { width: 50px; }
     }
   </style>
 </head>
 <body>
   <h1>Wordle Clone</h1>
-
-  <div>
-    <label for="mode">Mode:</label>
+  <div id="controls">
+    Mode:
     <select id="mode">
       <option value="kids">Kid</option>
       <option value="adult">Adult</option>
     </select>
-
-    <label for="type">Type:</label>
+    Type:
     <select id="type">
       <option value="daily">Daily</option>
       <option value="random">Random</option>
     </select>
-
     <button onclick="startGame()">Start Game</button>
   </div>
 
-  <div id="game">
-    <div id="feedback"></div>
-    <div id="keyboard"></div>
-  </div>
+  <div id="feedback"></div>
+  <div id="keyboard"></div>
+
+  <script src="main.js"></script>
 </body>
 </html>
