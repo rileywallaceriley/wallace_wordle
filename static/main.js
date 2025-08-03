@@ -1,7 +1,7 @@
 let secretWord = "";
 let attempts = 0;
 const maxAttempts = 6;
-const letterStatuses = {}; // A-Z: 'correct', 'present', 'absent'
+const letterStatuses = {};
 
 async function startGame() {
     const mode = document.getElementById("mode").value;
@@ -17,7 +17,7 @@ async function startGame() {
         <div id="feedback"></div>
 
         <div id="guess-area" style="margin-top: 20px;">
-            <input type="text" id="guessInput" maxlength="5" />
+            <input type="text" id="guessInput" maxlength="5" autocomplete="off" autocapitalize="characters" />
             <button onclick="submitGuess()">Submit</button>
         </div>
 
@@ -61,9 +61,8 @@ function submitGuess() {
 
     const result = Array(5).fill("absent");
     const secretCopy = secretWord.split("");
-    const guessChars = guess.split("");
 
-    // First pass: correct letters in correct position
+    // First pass: check correct positions
     for (let i = 0; i < 5; i++) {
         if (guess[i] === secretCopy[i]) {
             result[i] = "correct";
@@ -71,17 +70,17 @@ function submitGuess() {
         }
     }
 
-    // Second pass: correct letters in wrong position
+    // Second pass: check misplaced letters
     for (let i = 0; i < 5; i++) {
         if (result[i] === "correct") continue;
-        const index = secretCopy.indexOf(guess[i]);
-        if (index !== -1) {
+        const idx = secretCopy.indexOf(guess[i]);
+        if (idx !== -1) {
             result[i] = "present";
-            secretCopy[index] = null;
+            secretCopy[idx] = null;
         }
     }
 
-    // Draw row and update keyboard tracking
+    // Display row and update keyboard
     for (let i = 0; i < 5; i++) {
         const tile = document.createElement("span");
         tile.className = "tile " + result[i];
@@ -89,8 +88,8 @@ function submitGuess() {
         row.appendChild(tile);
 
         const ch = guess[i];
-        const rank = { "correct": 3, "present": 2, "absent": 1 };
-        if (!letterStatuses[ch] || rank[result[i]] > rank[letterStatuses[ch]]) {
+        const priority = { "correct": 3, "present": 2, "absent": 1 };
+        if (!letterStatuses[ch] || priority[result[i]] > priority[letterStatuses[ch]]) {
             letterStatuses[ch] = result[i];
         }
     }
@@ -102,8 +101,19 @@ function submitGuess() {
     input.focus();
 
     if (guess === secretWord) {
+        confettiBurst();
         setTimeout(() => alert(`🎉 You guessed it in ${attempts} tries!`), 100);
     } else if (attempts >= maxAttempts) {
         setTimeout(() => alert(`❌ Out of tries! The word was ${secretWord}`), 100);
+    }
+}
+
+function confettiBurst() {
+    if (typeof confetti === "function") {
+        confetti({
+            particleCount: 100,
+            spread: 70,
+            origin: { y: 0.6 }
+        });
     }
 }
