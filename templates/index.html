@@ -1,105 +1,109 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Wordle Clone</title>
-    <script src="/static/main.js" defer></script>
-    <style>
-        body {
-            font-family: sans-serif;
-            text-align: center;
-            background-color: #121213;
-            color: white;
-            padding: 20px;
-        }
+  <title>Wordle Clone</title>
+  <script src="/static/main.js" defer></script>
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+  <style>
+    body {
+      font-family: sans-serif;
+      background-color: #121213;
+      color: white;
+      padding: 20px;
+      margin: 0;
+      text-align: center;
+    }
 
-        h1 {
-            margin-bottom: 10px;
-        }
+    h1 {
+      margin-bottom: 10px;
+    }
 
-        #mode,
-        #type,
-        button {
-            font-size: 1em;
-            padding: 5px;
-            margin: 5px;
-        }
+    #keyboard { margin-top: 10px; }
 
-        #guessInput {
-            font-size: 1.5em;
-            text-transform: uppercase;
-            padding: 8px;
-            width: 150px;
-        }
+    .row {
+      display: flex;
+      justify-content: center;
+      margin: 5px 0;
+      flex-wrap: wrap;
+    }
 
-        .feedback-row {
-            margin: 10px auto;
-            font-size: 2em;
-            letter-spacing: 10px;
-        }
+    .key {
+      display: inline-block;
+      width: 36px;
+      height: 50px;
+      margin: 2px;
+      border: none;
+      font-size: 18px;
+      font-weight: bold;
+      color: white;
+      background-color: #818384;
+      border-radius: 4px;
+      cursor: pointer;
+      user-select: none;
+    }
 
-        .tile {
-            display: inline-block;
-            width: 40px;
-            height: 40px;
-            line-height: 40px;
-            border: 1px solid #555;
-            margin: 2px;
-            font-weight: bold;
-            text-align: center;
-            text-transform: uppercase;
-        }
+    .correct { background-color: #6aaa64 !important; }
+    .present { background-color: #c9b458 !important; }
+    .absent  { background-color: #3a3a3c !important; }
 
-        .correct {
-            background-color: #6aaa64;
-            color: white;
-        }
+    .feedback-row {
+      margin: 10px auto;
+      font-size: 2em;
+      letter-spacing: 10px;
+    }
 
-        .present {
-            background-color: #c9b458;
-            color: white;
-        }
+    .tile {
+      display: inline-block;
+      width: 40px;
+      height: 40px;
+      line-height: 40px;
+      border: 1px solid #555;
+      margin: 2px;
+      font-weight: bold;
+      text-align: center;
+      text-transform: uppercase;
+      font-size: 24px;
+    }
 
-        .absent {
-            background-color: #3a3a3c;
-            color: white;
-        }
+    @media screen and (max-width: 480px) {
+      .key {
+        width: 8vw;
+        height: 10vw;
+        font-size: 5vw;
+      }
 
-        #keyboard {
-            margin-top: 20px;
-        }
-
-        #keyboard .tile {
-            width: 30px;
-            height: 30px;
-            font-size: 16px;
-            margin: 3px;
-            cursor: default;
-        }
-
-        #guess-area {
-            margin-top: 20px;
-        }
-    </style>
+      .tile {
+        width: 14vw;
+        height: 14vw;
+        font-size: 6vw;
+        line-height: 14vw;
+        margin: 1vw;
+      }
+    }
+  </style>
 </head>
 <body>
-    <h1>Wordle Clone</h1>
+  <h1>Wordle Clone</h1>
 
-    <div>
-        <label for="mode">Mode:</label>
-        <select id="mode">
-            <option value="kids">Kid</option>
-            <option value="adult">Adult</option>
-        </select>
+  <div>
+    <label for="mode">Mode:</label>
+    <select id="mode">
+      <option value="kids">Kid</option>
+      <option value="adult">Adult</option>
+    </select>
 
-        <label for="type">Type:</label>
-        <select id="type">
-            <option value="daily">Daily</option>
-            <option value="random">Random</option>
-        </select>
+    <label for="type">Type:</label>
+    <select id="type">
+      <option value="daily">Daily</option>
+      <option value="random">Random</option>
+    </select>
 
-        <button onclick="startGame()">Start Game</button>
-    </div>
+    <button onclick="startGame()">Start Game</button>
+  </div>
 
-    <div id="game"></div>
+  <div id="game">
+    <div id="feedback"></div>
+    <div id="keyboard"></div>
+  </div>
 </body>
 </html>
