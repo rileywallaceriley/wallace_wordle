@@ -14,6 +14,7 @@ async function startGame() {
   const type = document.getElementById("type").value;
   const response = await fetch(`/get_word?mode=${mode}&type=${type}`);
   const data = await response.json();
+  console.log("Fetched word:", data);
   secretWord = data.word.toUpperCase();
   currentGuess = [];
   attempts = 0;
@@ -119,3 +120,4 @@ function submitGuess() {
   } else if (attempts >= maxAttempts) {
     setTimeout(() => alert(`❌ Out of tries! The word was ${secretWord}`), 150);
   }
+}
