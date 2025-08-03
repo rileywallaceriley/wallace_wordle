@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Wordle Clone</title>
+    <script src="/static/main.js" defer></script>
+</head>
+<body>
+    <h1>Wordle Clone</h1>
+    <div>
+        <label for="mode">Mode:</label>
+        <select id="mode">
+            <option value="kids">Kid</option>
+            <option value="adult">Adult</option>
+        </select>
+        <label for="type">Type:</label>
+        <select id="type">
+            <option value="daily">Daily</option>
+            <option value="random">Random</option>
+        </select>
+        <button onclick="startGame()">Start Game</button>
+    </div>
+    <div id="game"></div>
+</body>
+</html>
