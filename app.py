@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Request, Form
+from fastapi import FastAPI, Request
 from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
@@ -30,6 +30,7 @@ async def home(request: Request):
 
 @app.get("/get_word")
 async def get_word(mode: str = "kids", type: str = "daily"):
+    word_list = get_word_list(mode)
     if type == "random":
-        return {"word": random.choice(get_word_list(mode))}
+        return {"word": random.choice(word_list)}
     return {"word": daily_word(mode)}
