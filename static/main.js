@@ -1,119 +1,122 @@
 let secretWord = "";
+let currentGuess = [];
 let attempts = 0;
 const maxAttempts = 6;
 const letterStatuses = {};
+const KEY_LAYOUT = [
+  ["Q", "W", "E", "R", "T", "Y", "U", "I", "O", "P"],
+  ["A", "S", "D", "F", "G", "H", "J", "K", "L"],
+  ["Z", "X", "C", "V", "B", "N", "M", "⌫", "⏎"]
+];
 
 async function startGame() {
-    const mode = document.getElementById("mode").value;
-    const type = document.getElementById("type").value;
-    const response = await fetch(`/get_word?mode=${mode}&type=${type}`);
-    const data = await response.json();
-    secretWord = data.word.toUpperCase();
-    attempts = 0;
-    for (let ch in letterStatuses) delete letterStatuses[ch];
+  const mode = document.getElementById("mode").value;
+  const type = document.getElementById("type").value;
+  const response = await fetch(`/get_word?mode=${mode}&type=${type}`);
+  const data = await response.json();
+  secretWord = data.word.toUpperCase();
+  currentGuess = [];
+  attempts = 0;
+  Object.keys(letterStatuses).forEach(k => delete letterStatuses[k]);
 
-    const gameDiv = document.getElementById("game");
-    gameDiv.innerHTML = `
-        <div id="feedback"></div>
-
-        <div id="guess-area" style="margin-top: 20px;">
-            <input type="text" id="guessInput" maxlength="5" autocomplete="off" autocapitalize="characters" />
-            <button onclick="submitGuess()">Submit</button>
-        </div>
-
-        <div id="keyboard" style="margin-top: 20px;"></div>
-    `;
-
-    drawKeyboard();
-    document.getElementById("guessInput").focus();
+  document.getElementById("feedback").innerHTML = "";
+  buildKeyboard();
 }
 
-function drawKeyboard() {
-    const keys = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-    const keyboardDiv = document.getElementById("keyboard");
-    keyboardDiv.innerHTML = "";
+function buildKeyboard() {
+  const keyboard = document.getElementById("keyboard");
+  keyboard.innerHTML = "";
+  KEY_LAYOUT.forEach(row => {
+    const rowDiv = document.createElement("div");
+    rowDiv.className = "row";
+    row.forEach(key => {
+      const btn = document.createElement("button");
+      btn.className = "key";
+      btn.innerText = key;
+      btn.onclick = () => handleKey(key);
+      if (letterStatuses[key]) btn.classList.add(letterStatuses[key]);
+      rowDiv.appendChild(btn);
+    });
+    keyboard.appendChild(rowDiv);
+  });
+}
 
-    for (const ch of keys) {
-        const btn = document.createElement("span");
-        btn.innerText = ch;
-        btn.className = "tile";
-        if (letterStatuses[ch] === "correct") btn.classList.add("correct");
-        else if (letterStatuses[ch] === "present") btn.classList.add("present");
-        else if (letterStatuses[ch] === "absent") btn.classList.add("absent");
-        keyboardDiv.appendChild(btn);
-    }
+function handleKey(key) {
+  if (key === "⌫") {
+    currentGuess.pop();
+  } else if (key === "⏎") {
+    if (currentGuess.length === 5) submitGuess();
+    return;
+  } else if (currentGuess.length < 5) {
+    currentGuess.push(key);
+  }
+  renderCurrentRow();
+}
+
+function renderCurrentRow() {
+  const feedback = document.getElementById("feedback");
+  const rows = feedback.querySelectorAll(".feedback-row");
+  if (rows.length < attempts + 1) {
+    const newRow = document.createElement("div");
+    newRow.className = "feedback-row";
+    feedback.appendChild(newRow);
+  }
+  const row = feedback.querySelectorAll(".feedback-row")[attempts];
+  row.innerHTML = "";
+  for (let i = 0; i < 5; i++) {
+    const tile = document.createElement("span");
+    tile.className = "tile";
+    tile.innerText = currentGuess[i] || "";
+    row.appendChild(tile);
+  }
 }
 
 function submitGuess() {
-    const input = document.getElementById("guessInput");
-    const guess = input.value.toUpperCase();
+  const guess = currentGuess.join("");
+  if (guess.length !== 5) return;
 
-    if (guess.length !== 5) {
-        alert("Please enter a 5-letter word.");
-        return;
+  const result = Array(5).fill("absent");
+  const secretArr = secretWord.split("");
+
+  for (let i = 0; i < 5; i++) {
+    if (guess[i] === secretArr[i]) {
+      result[i] = "correct";
+      secretArr[i] = null;
     }
+  }
 
-    if (attempts >= maxAttempts) return;
-
-    const feedback = document.getElementById("feedback");
-    const row = document.createElement("div");
-    row.className = "feedback-row";
-
-    const result = Array(5).fill("absent");
-    const secretCopy = secretWord.split("");
-
-    // First pass: check correct positions
-    for (let i = 0; i < 5; i++) {
-        if (guess[i] === secretCopy[i]) {
-            result[i] = "correct";
-            secretCopy[i] = null;
-        }
+  for (let i = 0; i < 5; i++) {
+    if (result[i] === "correct") continue;
+    const index = secretArr.indexOf(guess[i]);
+    if (index !== -1) {
+      result[i] = "present";
+      secretArr[index] = null;
     }
+  }
 
-    // Second pass: check misplaced letters
-    for (let i = 0; i < 5; i++) {
-        if (result[i] === "correct") continue;
-        const idx = secretCopy.indexOf(guess[i]);
-        if (idx !== -1) {
-            result[i] = "present";
-            secretCopy[idx] = null;
-        }
+  const row = document.getElementById("feedback").querySelectorAll(".feedback-row")[attempts];
+  row.innerHTML = "";
+  for (let i = 0; i < 5; i++) {
+    const tile = document.createElement("span");
+    tile.className = `tile ${result[i]}`;
+    tile.innerText = guess[i];
+    row.appendChild(tile);
+
+    const key = guess[i];
+    const priority = { correct: 3, present: 2, absent: 1 };
+    if (!letterStatuses[key] || priority[result[i]] > priority[letterStatuses[key]]) {
+      letterStatuses[key] = result[i];
     }
+  }
 
-    // Display row and update keyboard
-    for (let i = 0; i < 5; i++) {
-        const tile = document.createElement("span");
-        tile.className = "tile " + result[i];
-        tile.innerText = guess[i];
-        row.appendChild(tile);
+  attempts++;
+  currentGuess = [];
+  buildKeyboard();
 
-        const ch = guess[i];
-        const priority = { "correct": 3, "present": 2, "absent": 1 };
-        if (!letterStatuses[ch] || priority[result[i]] > priority[letterStatuses[ch]]) {
-            letterStatuses[ch] = result[i];
-        }
-    }
-
-    feedback.appendChild(row);
-    input.value = "";
-    attempts++;
-    drawKeyboard();
-    input.focus();
-
-    if (guess === secretWord) {
-        confettiBurst();
-        setTimeout(() => alert(`🎉 You guessed it in ${attempts} tries!`), 100);
-    } else if (attempts >= maxAttempts) {
-        setTimeout(() => alert(`❌ Out of tries! The word was ${secretWord}`), 100);
-    }
-}
-
-function confettiBurst() {
-    if (typeof confetti === "function") {
-        confetti({
-            particleCount: 100,
-            spread: 70,
-            origin: { y: 0.6 }
-        });
-    }
+  if (guess === secretWord) {
+    confetti();
+    setTimeout(() => alert(`🎉 You got it in ${attempts} tries!`), 150);
+  } else if (attempts >= maxAttempts) {
+    setTimeout(() => alert(`❌ Out of tries! The word was ${secretWord}`), 150);
+  }
 }
