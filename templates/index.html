@@ -10,6 +10,7 @@
       background-color: #121213;
       color: white;
       padding: 20px;
+      padding-bottom: 180px;
       margin: 0;
       text-align: center;
     }
@@ -18,28 +19,44 @@
       margin-bottom: 10px;
     }
 
-    #keyboard { margin-top: 10px; }
+    #keyboard {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      padding: 10px 0;
+      background: #121213;
+      z-index: 999;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 5px;
+      max-width: 100%;
+      box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.6);
+    }
 
     .row {
       display: flex;
       justify-content: center;
-      margin: 5px 0;
-      flex-wrap: wrap;
+      gap: 4px;
     }
 
     .key {
-      display: inline-block;
-      width: 36px;
-      height: 50px;
-      margin: 2px;
+      flex: 1 1 0;
+      padding: 12px 0;
       border: none;
-      font-size: 18px;
-      font-weight: bold;
-      color: white;
-      background-color: #818384;
       border-radius: 4px;
+      background-color: #818384;
+      color: white;
+      font-weight: bold;
+      font-size: 16px;
       cursor: pointer;
+      transition: transform 0.1s ease, background-color 0.3s ease;
       user-select: none;
+    }
+
+    .key:active {
+      transform: scale(0.92);
     }
 
     .correct { background-color: #6aaa64 !important; }
@@ -69,7 +86,7 @@
       .key {
         width: 8vw;
         height: 10vw;
-        font-size: 5vw;
+        font-size: 4.2vw;
       }
 
       .tile {
