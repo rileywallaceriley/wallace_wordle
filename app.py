@@ -1,36 +1,36 @@
 from fastapi import FastAPI, Request
-from fastapi.responses import HTMLResponse
+from fastapi.responses import HTMLResponse, FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
-from fastapi.templating import Jinja2Templates
 import random
-from datetime import date
-import hashlib
+from pathlib import Path
+import datetime
 
 app = FastAPI()
+
 app.mount("/static", StaticFiles(directory="static"), name="static")
-templates = Jinja2Templates(directory="templates")
 
-def get_word_list(mode):
-    if mode == "kids":
-        with open("words_kids.txt") as f:
-            return f.read().splitlines()
-    else:
-        with open("words_adult.txt") as f:
-            return f.read().splitlines()
+# Load word lists
+with open("words/kids.txt") as f:
+    kids_words = [line.strip().upper() for line in f if len(line.strip()) == 5]
 
-def daily_word(mode):
-    word_list = get_word_list(mode)
-    today = date.today().isoformat()
-    hash_val = int(hashlib.sha256((today + mode).encode()).hexdigest(), 16)
-    return word_list[hash_val % len(word_list)]
+with open("words/adult.txt") as f:
+    adult_words = [line.strip().upper() for line in f if len(line.strip()) == 5]
+
+def get_daily_word(word_list):
+    today = datetime.date.today()
+    seed = int(today.strftime("%Y%m%d"))
+    random.seed(seed)
+    return random.choice(word_list)
 
 @app.get("/", response_class=HTMLResponse)
-async def home(request: Request):
-    return templates.TemplateResponse("index.html", {"request": request})
+async def root():
+    return FileResponse("index.html")
 
 @app.get("/get_word")
 async def get_word(mode: str = "kids", type: str = "daily"):
-    word_list = get_word_list(mode)
-    if type == "random":
-        return {"word": random.choice(word_list)}
-    return {"word": daily_word(mode)}
+    word_list = kids_words if mode == "kids" else adult_words
+    if type == "daily":
+        word = get_daily_word(word_list)
+    else:
+        word = random.choice(word_list)
+    return JSONResponse({"word": word})
