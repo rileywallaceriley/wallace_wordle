@@ -7,15 +7,15 @@ import datetime
 
 app = FastAPI()
 
-# Mount static and templates
+# Mount static files and templates
 app.mount("/static", StaticFiles(directory="static"), name="static")
 templates = Jinja2Templates(directory="templates")
 
-# Load word lists
-with open("words/kids.txt") as f:
+# Load words from the ROOT
+with open("kids.txt") as f:
     kids_words = [line.strip().upper() for line in f if len(line.strip()) == 5]
 
-with open("words/adult.txt") as f:
+with open("adult.txt") as f:
     adult_words = [line.strip().upper() for line in f if len(line.strip()) == 5]
 
 def get_daily_word(word_list):
