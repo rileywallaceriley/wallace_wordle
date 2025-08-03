@@ -4,30 +4,102 @@
     <title>Wordle Clone</title>
     <script src="/static/main.js" defer></script>
     <style>
-        body { font-family: sans-serif; text-align: center; }
-        #guessInput { font-size: 1.5em; text-transform: uppercase; }
-        .feedback-row { margin: 10px auto; font-size: 2em; letter-spacing: 10px; }
-        .tile { display: inline-block; width: 40px; height: 40px; line-height: 40px; border: 1px solid #ccc; margin: 2px; font-weight: bold; }
-        .correct { background-color: #6aaa64; color: white; }
-        .present { background-color: #c9b458; color: white; }
-        .absent { background-color: #787c7e; color: white; }
+        body {
+            font-family: sans-serif;
+            text-align: center;
+            background-color: #121213;
+            color: white;
+            padding: 20px;
+        }
+
+        h1 {
+            margin-bottom: 10px;
+        }
+
+        #mode,
+        #type,
+        button {
+            font-size: 1em;
+            padding: 5px;
+            margin: 5px;
+        }
+
+        #guessInput {
+            font-size: 1.5em;
+            text-transform: uppercase;
+            padding: 8px;
+            width: 150px;
+        }
+
+        .feedback-row {
+            margin: 10px auto;
+            font-size: 2em;
+            letter-spacing: 10px;
+        }
+
+        .tile {
+            display: inline-block;
+            width: 40px;
+            height: 40px;
+            line-height: 40px;
+            border: 1px solid #555;
+            margin: 2px;
+            font-weight: bold;
+            text-align: center;
+            text-transform: uppercase;
+        }
+
+        .correct {
+            background-color: #6aaa64;
+            color: white;
+        }
+
+        .present {
+            background-color: #c9b458;
+            color: white;
+        }
+
+        .absent {
+            background-color: #3a3a3c;
+            color: white;
+        }
+
+        #keyboard {
+            margin-top: 20px;
+        }
+
+        #keyboard .tile {
+            width: 30px;
+            height: 30px;
+            font-size: 16px;
+            margin: 3px;
+            cursor: default;
+        }
+
+        #guess-area {
+            margin-top: 20px;
+        }
     </style>
 </head>
 <body>
     <h1>Wordle Clone</h1>
+
     <div>
         <label for="mode">Mode:</label>
         <select id="mode">
             <option value="kids">Kid</option>
             <option value="adult">Adult</option>
         </select>
+
         <label for="type">Type:</label>
         <select id="type">
             <option value="daily">Daily</option>
             <option value="random">Random</option>
         </select>
+
         <button onclick="startGame()">Start Game</button>
     </div>
+
     <div id="game"></div>
 </body>
 </html>
