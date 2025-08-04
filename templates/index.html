@@ -16,11 +16,14 @@
     h1 {
       margin-bottom: 10px;
     }
+    #controls {
+      margin-bottom: 15px;
+    }
     #board {
       display: grid;
       grid-template-rows: repeat(6, 1fr);
       gap: 5px;
-      margin: 20px auto;
+      margin: 10px auto;
       max-width: 300px;
     }
     .row {
@@ -60,15 +63,33 @@
       cursor: pointer;
     }
     .key.used { background-color: #3a3a3c; }
-    button#shareBtn {
+
+    #shareBtn {
       margin-top: 20px;
       padding: 10px 20px;
       font-size: 1em;
+    }
+    select, label, button {
+      font-size: 1em;
+      margin: 5px;
     }
   </style>
 </head>
 <body>
   <h1>McWallace Wordle</h1>
+
+  <div id="controls">
+    <label for="mode">Mode:</label>
+    <select id="mode">
+      <option value="Kid">Kid</option>
+      <option value="Adult">Adult</option>
+    </select>
+
+    <label><input type="radio" name="type" value="Daily" checked /> Daily</label>
+    <label><input type="radio" name="type" value="Random" /> Random</label>
+    <button onclick="startGame()">Start New Game</button>
+  </div>
+
   <div id="board"></div>
   <div id="keyboard"></div>
   <button id="shareBtn" onclick="shareResult()">Share</button>
