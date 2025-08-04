@@ -1,7 +1,9 @@
-let targetWord = "";
-let guesses = Array.from({ length: 6 }, () => Array(5).fill(""));
+document.addEventListener("DOMContentLoaded", startGame);
+
+let guesses = [];
 let currentRow = 0;
 let currentCol = 0;
+let targetWord = "";
 let gameOver = false;
 
 async function startGame() {
