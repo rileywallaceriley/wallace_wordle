@@ -16,14 +16,11 @@
     h1 {
       margin-bottom: 10px;
     }
-    #controls {
-      margin-bottom: 15px;
-    }
     #board {
       display: grid;
       grid-template-rows: repeat(6, 1fr);
       gap: 5px;
-      margin: 10px auto;
+      margin: 20px auto;
       max-width: 300px;
     }
     .row {
@@ -64,14 +61,24 @@
     }
     .key.used { background-color: #3a3a3c; }
 
-    #shareBtn {
-      margin-top: 20px;
+    #controls {
+      margin: 20px 0;
+    }
+
+    #enterBtn, #shareBtn {
+      margin-top: 10px;
       padding: 10px 20px;
       font-size: 1em;
+      background-color: #538d4e;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
     }
-    select, label, button {
-      font-size: 1em;
-      margin: 5px;
+
+    #shareBtn {
+      display: none;
+      background-color: #1877f2;
     }
   </style>
 </head>
@@ -87,11 +94,14 @@
 
     <label><input type="radio" name="type" value="Daily" checked /> Daily</label>
     <label><input type="radio" name="type" value="Random" /> Random</label>
+
     <button onclick="startGame()">Start New Game</button>
   </div>
 
   <div id="board"></div>
   <div id="keyboard"></div>
+
+  <button id="enterBtn" onclick="submitGuess()">Enter</button>
   <button id="shareBtn" onclick="shareResult()">Share</button>
 
   <script src="/static/main.js"></script>
