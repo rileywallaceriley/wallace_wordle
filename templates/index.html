@@ -1,107 +1,79 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Wordle Clone</title>
+  <meta charset="UTF-8">
+  <title>McWallace Wordle</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
     body {
-      font-family: sans-serif;
       background: #121213;
       color: white;
-      margin: 0;
-      padding: 0;
-      text-align: center;
-    }
-    h1 { margin-top: 20px; }
-
-    #controls {
-      margin: 10px;
-    }
-
-    #feedback {
-      display: grid;
-      grid-template-rows: repeat(6, auto);
-      gap: 8px;
-      margin: 20px auto;
-      width: 100%;
-      max-width: 320px;
-    }
-
-    .feedback-row {
-      display: grid;
-      grid-template-columns: repeat(5, 1fr);
-      gap: 5px;
-    }
-
-    .tile {
-      background-color: #3a3a3c;
-      border: 2px solid #3a3a3c;
-      color: white;
-      font-size: 2rem;
-      font-weight: bold;
-      height: 3rem;
-      line-height: 3rem;
-      text-transform: uppercase;
-    }
-
-    .correct { background: #538d4e; }
-    .present { background: #b59f3b; }
-    .absent  { background: #3a3a3c; }
-
-    #keyboard {
+      font-family: sans-serif;
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 6px;
-      margin-bottom: 40px;
+      padding: 20px;
     }
-
+    h1 {
+      font-size: 1.8em;
+      margin-bottom: 10px;
+    }
+    #board {
+      display: grid;
+      grid-template-rows: repeat(6, 1fr);
+      gap: 5px;
+      margin-bottom: 20px;
+    }
+    .row {
+      display: flex;
+      justify-content: center;
+      gap: 5px;
+    }
+    .tile {
+      width: 45px;
+      height: 45px;
+      border: 2px solid #3a3a3c;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 1.5em;
+      text-transform: uppercase;
+      background: #121213;
+    }
+    .correct { background: #538d4e; border: none; }
+    .present { background: #b59f3b; border: none; }
+    .absent { background: #3a3a3c; border: none; }
+    #keyboard {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
     .key-row {
       display: flex;
-      gap: 4px;
+      justify-content: center;
+      gap: 5px;
     }
-
     .key {
-      padding: 12px;
+      padding: 10px;
       background: #818384;
-      color: white;
       border: none;
       border-radius: 4px;
-      font-size: 1rem;
-      width: 32px;
-      text-align: center;
+      color: white;
+      font-size: 1em;
+      flex: 1;
+      max-width: 40px;
+      text-transform: uppercase;
     }
-
-    .key.enter { width: 60px; }
-    .key.delete { width: 60px; }
-
-    @media (max-width: 480px) {
-      .tile { height: 2.5rem; line-height: 2.5rem; font-size: 1.5rem; }
-      .key { padding: 10px; width: 28px; font-size: 0.9rem; }
-      .key.enter, .key.delete { width: 50px; }
-    }
+    .key.correct { background: #538d4e; }
+    .key.present { background: #b59f3b; }
+    .key.absent { background: #3a3a3c; }
   </style>
 </head>
 <body>
-  <h1>Wordle Clone</h1>
-  <div id="controls">
-    Mode:
-    <select id="mode">
-      <option value="kids">Kid</option>
-      <option value="adult">Adult</option>
-    </select>
-    Type:
-    <select id="type">
-      <option value="daily">Daily</option>
-      <option value="random">Random</option>
-    </select>
-    <button onclick="startGame()">Start Game</button>
-  </div>
-
-  <div id="feedback"></div>
+  <h1>McWallace Wordle</h1>
+  <div id="board"></div>
   <div id="keyboard"></div>
-
+  <button onclick="shareResult()">Share</button>
   <script src="/static/main.js"></script>
 </body>
 </html>
