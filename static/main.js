@@ -1,142 +1,149 @@
-let board = document.getElementById("board");
-let keyboard = document.getElementById("keyboard");
-let currentRow = 0;
-let currentGuess = "";
-let guesses = [];
 let targetWord = "";
+let guesses = Array.from({ length: 6 }, () => Array(5).fill(""));
+let currentRow = 0;
+let currentCol = 0;
 let gameOver = false;
 
-// QWERTY layout
-const rows = [
-  "QWERTYUIOP".split(""),
-  "ASDFGHJKL".split(""),
-  ["Enter", ..."ZXCVBNM".split(""), "Back"]
-];
-
 async function startGame() {
-  const res = await fetch("/get_word");
-  const data = await res.json();
-  targetWord = data.word.toUpperCase();
-  guesses = Array.from({ length: 6 }, () => Array(5).fill(""));
-  drawBoard();
-  drawKeyboard();
+  try {
+    const res = await fetch("/get_word");
+    const data = await res.json();
+    targetWord = data.word.toUpperCase();
+    drawBoard();
+    drawKeyboard();
+  } catch (e) {
+    alert("Failed to load word.");
+  }
 }
 
 function drawBoard() {
+  const board = document.getElementById("board");
   board.innerHTML = "";
-  guesses.forEach((row, rowIndex) => {
-    let rowEl = document.createElement("div");
-    rowEl.className = "row";
-    row.forEach((letter, colIndex) => {
-      let tile = document.createElement("div");
+  for (let row = 0; row < 6; row++) {
+    const divRow = document.createElement("div");
+    divRow.className = "row";
+    for (let col = 0; col < 5; col++) {
+      const tile = document.createElement("div");
       tile.className = "tile";
-      tile.textContent = letter;
-      tile.id = `tile-${rowIndex}-${colIndex}`;
-      rowEl.appendChild(tile);
-    });
-    board.appendChild(rowEl);
-  });
+      tile.id = `tile-${row}-${col}`;
+      tile.textContent = guesses[row][col];
+      divRow.appendChild(tile);
+    }
+    board.appendChild(divRow);
+  }
 }
 
 function drawKeyboard() {
+  const keys = [
+    ..."QWERTYUIOP", ..."ASDFGHJKL", "ENTER", ..."ZXCVBNM", "⌫"
+  ];
+  const keyboard = document.getElementById("keyboard");
   keyboard.innerHTML = "";
-  rows.forEach(row => {
-    let rowEl = document.createElement("div");
-    rowEl.className = "key-row";
-    row.forEach(key => {
-      let btn = document.createElement("button");
-      btn.className = "key";
-      btn.textContent = key;
-      btn.onclick = () => handleKey(key);
-      btn.id = `key-${key}`;
-      rowEl.appendChild(btn);
-    });
-    keyboard.appendChild(rowEl);
+  keys.forEach(k => {
+    const btn = document.createElement("button");
+    btn.className = "key";
+    btn.textContent = k;
+    btn.onclick = () => handleKey(k);
+    keyboard.appendChild(btn);
   });
 }
 
 function handleKey(key) {
   if (gameOver) return;
 
-  if (key === "Back") {
-    currentGuess = currentGuess.slice(0, -1);
-  } else if (key === "Enter") {
+  if (key === "ENTER") {
     submitGuess();
-  } else if (currentGuess.length < 5 && /^[A-Z]$/.test(key)) {
-    currentGuess += key;
+  } else if (key === "⌫") {
+    if (currentCol > 0) {
+      currentCol--;
+      guesses[currentRow][currentCol] = "";
+      updateBoard();
+    }
+  } else if (/^[A-Z]$/.test(key)) {
+    if (currentCol < 5) {
+      guesses[currentRow][currentCol] = key;
+      currentCol++;
+      updateBoard();
+    }
   }
-  updateCurrentRow();
+}
+
+function updateBoard() {
+  for (let r = 0; r < 6; r++) {
+    for (let c = 0; c < 5; c++) {
+      const tile = document.getElementById(`tile-${r}-${c}`);
+      tile.textContent = guesses[r][c];
+    }
+  }
 }
 
 async function submitGuess() {
-  if (currentGuess.length !== 5) return;
+  const guess = guesses[currentRow].join("");
+  if (guess.length < 5) return;
 
-  const res = await fetch(`/validate_word?word=${currentGuess}`);
+  const res = await fetch(`/validate_word?word=${guess}`);
   const data = await res.json();
   if (!data.valid) {
-    alert("Not a valid word.");
+    alert("Not a valid word!");
     return;
   }
 
-  const guess = currentGuess.toUpperCase();
-  const row = [];
+  const rowTiles = guesses[currentRow];
+  const letterCount = {};
+  for (let l of targetWord) letterCount[l] = (letterCount[l] || 0) + 1;
 
   for (let i = 0; i < 5; i++) {
     const tile = document.getElementById(`tile-${currentRow}-${i}`);
-    tile.textContent = guess[i];
+    const keyBtn = [...document.getElementsByClassName("key")]
+      .find(k => k.textContent === rowTiles[i]);
 
-    if (guess[i] === targetWord[i]) {
+    if (rowTiles[i] === targetWord[i]) {
       tile.classList.add("correct");
-      colorKey(guess[i], "correct");
-    } else if (targetWord.includes(guess[i])) {
-      tile.classList.add("present");
-      colorKey(guess[i], "present");
-    } else {
-      tile.classList.add("absent");
-      colorKey(guess[i], "absent");
+      keyBtn?.classList.add("used");
+      letterCount[rowTiles[i]]--;
     }
-
-    row.push(tile);
   }
 
-  guesses[currentRow] = guess.split("");
-  currentRow++;
-  currentGuess = "";
+  for (let i = 0; i < 5; i++) {
+    const tile = document.getElementById(`tile-${currentRow}-${i}`);
+    const keyBtn = [...document.getElementsByClassName("key")]
+      .find(k => k.textContent === rowTiles[i]);
+
+    if (!tile.classList.contains("correct")) {
+      if (targetWord.includes(rowTiles[i]) && letterCount[rowTiles[i]] > 0) {
+        tile.classList.add("present");
+        letterCount[rowTiles[i]]--;
+      } else {
+        tile.classList.add("absent");
+      }
+      keyBtn?.classList.add("used");
+    }
+  }
 
   if (guess === targetWord) {
     gameOver = true;
-    setTimeout(() => alert("🎉 You got it!"), 300);
-  } else if (currentRow === 6) {
+    alert("🎉 You got it!");
+  } else if (currentRow === 5) {
     gameOver = true;
-    setTimeout(() => alert(`The word was: ${targetWord}`), 300);
+    alert(`Out of guesses! Word was ${targetWord}`);
+  } else {
+    currentRow++;
+    currentCol = 0;
   }
-}
-
-function updateCurrentRow() {
-  for (let i = 0; i < 5; i++) {
-    const tile = document.getElementById(`tile-${currentRow}-${i}`);
-    tile.textContent = currentGuess[i] || "";
-  }
-}
-
-function colorKey(letter, status) {
-  const key = document.getElementById(`key-${letter}`);
-  if (!key) return;
-  key.classList.remove("correct", "present", "absent");
-  key.classList.add(status);
 }
 
 function generateShareText() {
   let lines = [];
-  for (let i = 0; i < currentRow; i++) {
-    let rowText = "";
-    for (let j = 0; j < 5; j++) {
-      const tile = document.getElementById(`tile-${i}-${j}`);
-      if (tile.classList.contains("correct")) rowText += "🟩";
-      else if (tile.classList.contains("present")) rowText += "🟨";
-      else rowText += "⬛";
+  for (let r = 0; r <= currentRow; r++) {
+    let row = guesses[r];
+    let line = '';
+    for (let c = 0; c < 5; c++) {
+      const tile = document.getElementById(`tile-${r}-${c}`);
+      if (tile.classList.contains("correct")) line += "🟩";
+      else if (tile.classList.contains("present")) line += "🟨";
+      else line += "⬛";
     }
-    lines.push(rowText);
+    lines.push(line);
   }
   return `McWallace Wordle\n${lines.join("\n")}`;
 }
@@ -144,8 +151,8 @@ function generateShareText() {
 function shareResult() {
   const text = generateShareText();
   navigator.clipboard.writeText(text).then(() => {
-    alert("Copied to clipboard!");
+    alert("Result copied to clipboard!");
   });
 }
 
-startGame();
+window.onload = startGame;
