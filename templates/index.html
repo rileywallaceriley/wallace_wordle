@@ -62,47 +62,44 @@
     .key.used { background-color: #3a3a3c; }
 
     #controls {
-      margin: 20px 0;
+      margin-top: 20px;
     }
-
-    #enterBtn, #shareBtn {
-      margin-top: 10px;
+    #enterBtn, #deleteBtn, #shareBtn, #newGameBtn {
+      margin: 10px 5px;
       padding: 10px 20px;
       font-size: 1em;
-      background-color: #538d4e;
-      color: white;
-      border: none;
-      border-radius: 4px;
-      cursor: pointer;
     }
-
-    #shareBtn {
-      display: none;
-      background-color: #1877f2;
+    #options {
+      margin: 10px auto;
+    }
+    label {
+      margin: 0 10px;
     }
   </style>
 </head>
 <body>
   <h1>McWallace Wordle</h1>
 
-  <div id="controls">
-    <label for="mode">Mode:</label>
-    <select id="mode">
-      <option value="Kid">Kid</option>
-      <option value="Adult">Adult</option>
-    </select>
-
-    <label><input type="radio" name="type" value="Daily" checked /> Daily</label>
-    <label><input type="radio" name="type" value="Random" /> Random</label>
-
-    <button onclick="startGame()">Start New Game</button>
+  <div id="options">
+    <label>Mode:
+      <input type="radio" name="mode" value="Kid" checked> Kid
+      <input type="radio" name="mode" value="Adult"> Adult
+    </label>
+    <label>Type:
+      <input type="radio" name="type" value="Daily" checked> Daily
+      <input type="radio" name="type" value="Random"> Random
+    </label>
+    <button id="newGameBtn">Start New Game</button>
   </div>
 
   <div id="board"></div>
   <div id="keyboard"></div>
 
-  <button id="enterBtn" onclick="submitGuess()">Enter</button>
-  <button id="shareBtn" onclick="shareResult()">Share</button>
+  <div id="controls">
+    <button id="enterBtn">Enter</button>
+    <button id="deleteBtn">Delete</button>
+    <button id="shareBtn" style="display:none;">Share</button>
+  </div>
 
   <script src="/static/main.js"></script>
 </body>
