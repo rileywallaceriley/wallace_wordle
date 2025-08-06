@@ -1,166 +1,141 @@
-let solution = "";
+let board = [];
 let currentRow = 0;
-let currentGuess = "";
-let isGameOver = false;
+let currentTile = 0;
+let word = "";
+const maxRows = 6;
 
-const board = document.getElementById("board");
-const keyboard = document.getElementById("keyboard");
+const boardEl = document.getElementById("board");
+const keyboardEl = document.getElementById("keyboard");
 const shareBtn = document.getElementById("shareBtn");
-const enterBtn = document.getElementById("enterBtn") || document.createElement("button");
+const endMessage = document.getElementById("endMessage");
 
-document.addEventListener("DOMContentLoaded", async () => {
-  shareBtn.style.display = "none";
-  enterBtn.textContent = "Enter";
-  enterBtn.id = "enterBtn";
-  enterBtn.className = "key";
-  document.body.appendChild(enterBtn);
+const keys = "QWERTYUIOPASDFGHJKLZXCVBNM".split("");
 
-  await startNewGame();
-
-  enterBtn.addEventListener("click", handleEnter);
-  shareBtn.addEventListener("click", shareResult);
-
-  document.querySelectorAll("input[name='mode']").forEach(el => el.addEventListener("change", startNewGame));
-  document.querySelectorAll("input[name='type']").forEach(el => el.addEventListener("change", startNewGame));
-  document.getElementById("newGameBtn").addEventListener("click", startNewGame);
-});
-
-async function startNewGame() {
-  currentRow = 0;
-  currentGuess = "";
-  isGameOver = false;
-  shareBtn.style.display = "none";
-
-  board.innerHTML = "";
-  for (let i = 0; i < 6; i++) {
-    const row = document.createElement("div");
-    row.className = "row";
+function createBoard() {
+  for (let i = 0; i < maxRows; i++) {
+    const rowEl = document.createElement("div");
+    rowEl.className = "row";
+    board[i] = [];
     for (let j = 0; j < 5; j++) {
       const tile = document.createElement("div");
       tile.className = "tile";
-      row.appendChild(tile);
+      rowEl.appendChild(tile);
+      board[i].push(tile);
     }
-    board.appendChild(row);
+    boardEl.appendChild(rowEl);
   }
-
-  const mode = document.querySelector("input[name='mode']:checked").value;
-  const type = document.querySelector("input[name='type']:checked").value;
-  const response = await fetch(`/get_word?mode=${mode}&type=${type}`);
-  const data = await response.json();
-  solution = data.word.toUpperCase();
-
-  createKeyboard();
 }
 
 function createKeyboard() {
-  keyboard.innerHTML = "";
-  const rows = ["QWERTYUIOP", "ASDFGHJKL", "ZXCVBNM"];
-  rows.forEach(row => {
-    row.split("").forEach(letter => {
-      const key = document.createElement("button");
-      key.textContent = letter;
-      key.className = "key";
-      key.addEventListener("click", () => handleKey(letter));
-      keyboard.appendChild(key);
-    });
+  keys.forEach((letter) => {
+    const key = document.createElement("button");
+    key.className = "key";
+    key.textContent = letter;
+    key.onclick = () => handleKey(letter);
+    keyboardEl.appendChild(key);
   });
 
   const delKey = document.createElement("button");
-  delKey.textContent = "Del";
+  delKey.textContent = "⌫";
   delKey.className = "key";
-  delKey.addEventListener("click", handleDelete);
-  keyboard.appendChild(delKey);
+  delKey.onclick = handleBackspace;
+  keyboardEl.appendChild(delKey);
 }
 
 function handleKey(letter) {
-  if (isGameOver || currentGuess.length >= 5) return;
-  currentGuess += letter;
-  updateBoard();
+  if (currentTile < 5 && currentRow < maxRows) {
+    board[currentRow][currentTile].textContent = letter;
+    currentTile++;
+  }
 }
 
-function handleDelete() {
-  if (isGameOver || currentGuess.length === 0) return;
-  currentGuess = currentGuess.slice(0, -1);
-  updateBoard();
+function handleBackspace() {
+  if (currentTile > 0) {
+    currentTile--;
+    board[currentRow][currentTile].textContent = "";
+  }
 }
 
 async function handleEnter() {
-  if (isGameOver || currentGuess.length !== 5) return;
+  if (currentTile < 5 || currentRow >= maxRows) return;
 
-  const response = await fetch(`/validate_word?word=${currentGuess}`);
-  const data = await response.json();
+  const guess = board[currentRow].map(t => t.textContent).join("");
+  const res = await fetch(`/validate_word?word=${guess}`);
+  const data = await res.json();
   if (!data.valid) {
-    alert("Not a valid word");
+    alert("Invalid word!");
     return;
   }
 
-  const result = evaluateGuess(currentGuess, solution);
-  const row = board.children[currentRow].children;
-  result.forEach((status, i) => {
-    row[i].classList.add(status);
-    const key = [...keyboard.children].find(k => k.textContent === currentGuess[i]);
-    if (key) key.classList.add("used");
-  });
-
-  if (currentGuess === solution) {
-    isGameOver = true;
-    shareBtn.style.display = "inline-block";
-  } else if (++currentRow === 6) {
-    isGameOver = true;
-    alert(`The word was ${solution}`);
-    shareBtn.style.display = "inline-block";
+  const letterCount = {};
+  for (let l of word) {
+    letterCount[l] = (letterCount[l] || 0) + 1;
   }
 
-  currentGuess = "";
-}
+  const status = Array(5).fill("absent");
 
-function updateBoard() {
-  const row = board.children[currentRow];
+  // First pass: correct
   for (let i = 0; i < 5; i++) {
-    row.children[i].textContent = currentGuess[i] || "";
-  }
-}
-
-function evaluateGuess(guess, solution) {
-  const result = Array(5).fill("absent");
-  const solutionArr = solution.split("");
-  const guessArr = guess.split("");
-
-  // First pass: correct letters
-  for (let i = 0; i < 5; i++) {
-    if (guessArr[i] === solutionArr[i]) {
-      result[i] = "correct";
-      solutionArr[i] = null;
-      guessArr[i] = null;
+    if (guess[i] === word[i]) {
+      status[i] = "correct";
+      letterCount[guess[i]]--;
     }
   }
 
-  // Second pass: present letters
+  // Second pass: present
   for (let i = 0; i < 5; i++) {
-    if (guessArr[i] && solutionArr.includes(guessArr[i])) {
-      result[i] = "present";
-      solutionArr[solutionArr.indexOf(guessArr[i])] = null;
+    if (status[i] === "absent" && word.includes(guess[i]) && letterCount[guess[i]] > 0) {
+      status[i] = "present";
+      letterCount[guess[i]]--;
     }
   }
 
-  return result;
+  // Apply coloring
+  for (let i = 0; i < 5; i++) {
+    board[currentRow][i].classList.add(status[i]);
+  }
+
+  if (guess === word || currentRow === maxRows - 1) {
+    endMessage.style.display = "block";
+    shareBtn.style.display = "inline-block";
+  }
+
+  currentRow++;
+  currentTile = 0;
 }
 
 function shareResult() {
-  let emojiGrid = "";
+  let result = "McWallace Wordle\n\n";
   for (let i = 0; i < currentRow; i++) {
-    const row = board.children[i].children;
+    const row = board[i];
     for (let j = 0; j < 5; j++) {
-      if (row[j].classList.contains("correct")) emojiGrid += "🟩";
-      else if (row[j].classList.contains("present")) emojiGrid += "🟨";
-      else emojiGrid += "⬛";
+      const tile = row[j];
+      if (tile.classList.contains("correct")) {
+        result += "🟩";
+      } else if (tile.classList.contains("present")) {
+        result += "🟨";
+      } else {
+        result += "⬛";
+      }
     }
-    emojiGrid += "\n";
+    result += "\n";
   }
+  result += `\nTry it today: https://wallace-wordle.onrender.com`;
 
-  const message = `McWallace Wordle\n\n${emojiGrid}\nTry it today: https://wallace-wordle.onrender.com`;
-
-  navigator.clipboard.writeText(message).then(() => {
-    alert("Copied to clipboard!");
+  navigator.clipboard.writeText(result).then(() => {
+    alert("Result copied to clipboard!");
   });
 }
+
+async function fetchWord() {
+  const res = await fetch("/get_word");
+  const data = await res.json();
+  word = data.word;
+  console.log("Target word:", word);
+}
+
+document.getElementById("enterBtn").addEventListener("click", handleEnter);
+
+createBoard();
+createKeyboard();
+fetchWord();
