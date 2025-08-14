@@ -5,10 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>McWallace Wordle</title>
   <style>
-    * {
-      box-sizing: border-box;
-    }
-
     body {
       font-family: sans-serif;
       background: #000;
@@ -16,40 +12,34 @@
       margin: 0;
       padding: 10px;
       text-align: center;
-      overflow: hidden; /* Prevent scrolling */
     }
 
-    img {
+    img#logo {
       width: 90%;
       max-width: 400px;
-      margin-bottom: 8px;
-    }
-
-    select, button {
-      padding: 6px;
-      font-size: 1em;
-      margin: 5px 4px;
+      margin: 10px auto;
+      display: block;
     }
 
     #board {
       display: grid;
       grid-template-rows: repeat(6, 1fr);
-      gap: 4px;
-      margin: 10px auto;
-      max-width: 260px;
+      gap: 5px;
+      margin: 15px auto;
+      max-width: 300px;
     }
 
     .row {
       display: grid;
       grid-template-columns: repeat(5, 1fr);
-      gap: 4px;
+      gap: 5px;
     }
 
     .tile {
-      width: 45px;
-      height: 45px;
+      width: 50px;
+      height: 50px;
       border: 2px solid #555;
-      font-size: 1.4em;
+      font-size: 1.5em;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -62,91 +52,107 @@
     .absent { background-color: #3a3a3c; }
 
     #keyboard {
-      display: grid;
-      grid-template-columns: repeat(10, 1fr);
-      gap: 3px;
-      max-width: 320px;
-      margin: 8px auto;
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+      align-items: center;
+      justify-content: center;
+      margin: 20px auto;
+    }
+
+    .keyboard-row {
+      display: flex;
+      gap: 5px;
+      justify-content: center;
+      flex-wrap: wrap;
     }
 
     .key {
-      padding: 8px;
+      padding: 10px 8px;
+      min-width: 32px;
       background-color: #818384;
       color: white;
       border: none;
-      font-size: 0.9em;
-      border-radius: 4px;
-      cursor: pointer;
-    }
-
-    .key.used { background-color: #3a3a3c; }
-
-    #enterBtn, #shareBtn, #randomBtn {
-      margin-top: 5px;
-      padding: 10px 16px;
       font-size: 1em;
       border-radius: 5px;
+      cursor: pointer;
+      flex: 1 0 auto;
+    }
+
+    .key.used {
+      background-color: #3a3a3c;
+    }
+
+    #enterBtn, #shareBtn, #randomBtn {
+      margin-top: 15px;
+      padding: 10px 20px;
+      font-size: 1em;
       border: none;
+      border-radius: 5px;
+    }
+
+    #enterBtn {
       background-color: #538d4e;
       color: white;
-      cursor: pointer;
     }
 
     #shareBtn, #randomBtn {
+      background-color: #444;
+      color: white;
       display: none;
+      margin-right: 5px;
     }
 
     #endMessage {
       display: none;
-      font-size: 1.1em;
-      margin-top: 10px;
+      font-size: 1.2em;
+      margin-top: 15px;
     }
 
-    @media (max-height: 700px) {
-      .tile {
-        width: 36px;
-        height: 36px;
-        font-size: 1.2em;
-      }
+    #selectors {
+      margin: 10px auto;
+    }
 
+    select {
+      padding: 5px;
+      margin: 0 5px;
+    }
+
+    @media (max-width: 500px) {
       .key {
-        padding: 6px;
-        font-size: 0.8em;
-      }
-
-      #board {
-        max-width: 220px;
-      }
-
-      #keyboard {
-        max-width: 280px;
-        grid-template-columns: repeat(10, 1fr);
+        font-size: 0.85em;
+        padding: 8px 6px;
+        min-width: 28px;
       }
     }
   </style>
 </head>
 <body>
-  <img src="/static/IMG_2730.jpeg" alt="McWallace Wordle Logo" />
 
-  <select id="modeSelect">
-    <option value="Kid">Kid</option>
-    <option value="Adult">Adult</option>
-  </select>
+  <img id="logo" src="static/IMG_2730.jpeg" alt="McWallace Wordle Logo" />
 
-  <select id="typeSelect">
-    <option value="Daily">Daily</option>
-    <option value="Random">Random</option>
-  </select>
-
-  <button onclick="startGame()">Start Game</button>
+  <div id="selectors">
+    <select id="modeSelect">
+      <option value="Kid">Kid</option>
+      <option value="Adult">Adult</option>
+    </select>
+    <select id="typeSelect">
+      <option value="Daily">Daily</option>
+      <option value="Random">Random</option>
+    </select>
+    <button onclick="startGame()">Start</button>
+  </div>
 
   <div id="board"></div>
+
   <div id="keyboard"></div>
 
   <button id="enterBtn">Enter</button>
+
   <div id="endMessage"></div>
+
   <button id="shareBtn" onclick="shareResult()">Share</button>
-  <button id="randomBtn" onclick="startRandom()">Try Another Random Puzzle</button>
+  <button id="randomBtn" onclick="startRandom()">Try Another</button>
 
   <script src="/static/main.js"></script>
 </body>
