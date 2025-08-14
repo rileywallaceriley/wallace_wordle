@@ -41,8 +41,8 @@ function renderBoard() {
       const guess = guesses[i] || "";
       if (guess[j]) {
         tile.textContent = guess[j];
-        const status = getTileStatus(guess[j], j, guess);
-        tile.classList.add(status);
+        const status = getTileStatus(guess, j);
+        tile.classList.add(status[j]);
       }
       row.appendChild(tile);
     }
@@ -53,20 +53,20 @@ function renderBoard() {
 function renderKeyboard() {
   const keyboard = document.getElementById("keyboard");
   keyboard.innerHTML = "";
-  const letters = "QWERTYUIOPASDFGHJKLZXCVBNM".split("");
-  letters.forEach(letter => {
-    const key = document.createElement("button");
-    key.className = "key";
-    key.textContent = letter;
-    key.onclick = () => handleKey(letter);
-    keyboard.appendChild(key);
+  const layout = [
+    "QWERTYUIOP",
+    "ASDFGHJKL",
+    "ZXCVBNM⌫"
+  ];
+  layout.forEach(row => {
+    row.split("").forEach(letter => {
+      const key = document.createElement("button");
+      key.className = "key";
+      key.textContent = letter === "⌫" ? "⌫" : letter;
+      key.onclick = () => letter === "⌫" ? handleDelete() : handleKey(letter);
+      keyboard.appendChild(key);
+    });
   });
-  // Delete key
-  const delKey = document.createElement("button");
-  delKey.className = "key";
-  delKey.textContent = "⌫";
-  delKey.onclick = () => handleDelete();
-  keyboard.appendChild(delKey);
 }
 
 function handleKey(letter) {
@@ -104,6 +104,7 @@ document.getElementById("enterBtn").addEventListener("click", () => {
       }
 
       guesses.push(currentGuess);
+
       if (currentGuess === word) {
         endGame(true);
       } else if (guesses.length === maxGuesses) {
@@ -118,7 +119,9 @@ document.getElementById("enterBtn").addEventListener("click", () => {
 function endGame(won) {
   gameOver = true;
   renderBoard();
-  const msg = won ? "🎉 Congratulations, you got today’s word!" : `❌ The word was ${word}`;
+  const msg = won
+    ? "🎉 Congratulations, you got today’s word!"
+    : `❌ The word was ${word}`;
   document.getElementById("endMessage").textContent = msg;
   document.getElementById("endMessage").style.display = "block";
   document.getElementById("shareBtn").style.display = "inline-block";
@@ -128,22 +131,49 @@ function endGame(won) {
 function shareResult() {
   let summary = `McWallace Wordle 🟩🟨⬛\n\n`;
   guesses.forEach(g => {
+    const status = getTileStatus(g);
     for (let i = 0; i < 5; i++) {
-      if (g[i] === word[i]) summary += "🟩";
-      else if (word.includes(g[i])) summary += "🟨";
+      if (status[i] === "correct") summary += "🟩";
+      else if (status[i] === "present") summary += "🟨";
       else summary += "⬛";
     }
     summary += "\n";
   });
-  summary += "\nTry it today: https://wallace-wordle.onrender.com";
+  summary += `\nTry it today: https://wallace-wordle.onrender.com`;
 
   navigator.clipboard.writeText(summary).then(() => {
     alert("Result copied to clipboard!");
   });
 }
 
-function getTileStatus(letter, index, guess) {
-  if (letter === word[index]) return "correct";
-  if (word.includes(letter)) return "present";
-  return "absent";
+// NEW version that handles duplicate letters properly
+function getTileStatus(guess, index = null) {
+  let result = Array(5).fill("absent");
+  const wordArr = word.split("");
+  const guessArr = guess.split("");
+  const letterCount = {};
+
+  // Track letters in target word
+  for (let char of wordArr) {
+    letterCount[char] = (letterCount[char] || 0) + 1;
+  }
+
+  // First pass: exact matches
+  for (let i = 0; i < 5; i++) {
+    if (guessArr[i] === wordArr[i]) {
+      result[i] = "correct";
+      letterCount[guessArr[i]]--;
+    }
+  }
+
+  // Second pass: present but not exact
+  for (let i = 0; i < 5; i++) {
+    if (result[i] === "correct") continue;
+    if (letterCount[guessArr[i]] > 0) {
+      result[i] = "present";
+      letterCount[guessArr[i]]--;
+    }
+  }
+
+  return index !== null ? result[index] : result;
 }
