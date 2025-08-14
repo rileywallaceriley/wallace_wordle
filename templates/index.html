@@ -7,15 +7,22 @@
   <style>
     body {
       font-family: sans-serif;
-      background: #000000;
+      background: #000;
       color: #fff;
       margin: 0;
       padding: 20px;
       text-align: center;
     }
 
-    h1 {
+    img {
+      width: 80px;
       margin-bottom: 10px;
+    }
+
+    select, button {
+      padding: 10px;
+      font-size: 1em;
+      margin: 10px 5px;
     }
 
     #board {
@@ -68,21 +75,18 @@
 
     .key.used { background-color: #3a3a3c; }
 
-    #enterBtn {
-      margin: 10px auto;
+    #enterBtn, #shareBtn, #randomBtn {
+      margin-top: 10px;
       padding: 10px 20px;
       font-size: 1em;
+      border-radius: 5px;
+      border: none;
       background-color: #538d4e;
       color: white;
-      border: none;
-      border-radius: 5px;
-      display: block;
+      cursor: pointer;
     }
 
-    #shareBtn {
-      margin-top: 20px;
-      padding: 10px 20px;
-      font-size: 1em;
+    #shareBtn, #randomBtn {
       display: none;
     }
 
@@ -94,12 +98,28 @@
   </style>
 </head>
 <body>
- <img src="static/IMG_2730.jpeg" width="90%"/>
+  <img src="/static/IMG_2730.jpeg" alt="McWallace Logo" />
+  <h1>McWallace Wordle</h1>
+
+  <select id="modeSelect">
+    <option value="Kid">Kid</option>
+    <option value="Adult">Adult</option>
+  </select>
+
+  <select id="typeSelect">
+    <option value="Daily">Daily</option>
+    <option value="Random">Random</option>
+  </select>
+
+  <button onclick="startGame()">Start Game</button>
+
   <div id="board"></div>
   <div id="keyboard"></div>
+
   <button id="enterBtn">Enter</button>
-  <div id="endMessage">🎉 Congratulations, you got today’s word!</div>
+  <div id="endMessage"></div>
   <button id="shareBtn" onclick="shareResult()">Share</button>
+  <button id="randomBtn" onclick="startRandom()">Try Another Random Puzzle</button>
 
   <script src="/static/main.js"></script>
 </body>
