@@ -5,8 +5,8 @@ let maxGuesses = 6;
 let gameOver = false;
 
 function startGame() {
-  const mode = document.getElementById("modeSelect").value;
-  const type = document.getElementById("typeSelect").value;
+  const mode = document.getElementById("modeSelect")?.value || "Kid";
+  const type = document.getElementById("typeSelect")?.value || "Daily";
 
   fetch(`/get_word?mode=${mode}&type=${type}`)
     .then(res => res.json())
@@ -41,8 +41,8 @@ function renderBoard() {
       const guess = guesses[i] || "";
       if (guess[j]) {
         tile.textContent = guess[j];
-        const status = getTileStatus(guess, j);
-        tile.classList.add(status[j]);
+        const status = getTileStatus(guess[j], j, guess);
+        tile.classList.add(status);
       }
       row.appendChild(tile);
     }
@@ -53,19 +53,20 @@ function renderBoard() {
 function renderKeyboard() {
   const keyboard = document.getElementById("keyboard");
   keyboard.innerHTML = "";
-  const layout = [
-    "QWERTYUIOP",
-    "ASDFGHJKL",
-    "ZXCVBNM⌫"
-  ];
+  const layout = ["QWERTYUIOP", "ASDFGHJKL", "ZXCVBNM⌫"];
+
   layout.forEach(row => {
+    const rowDiv = document.createElement("div");
+    rowDiv.className = "keyboard-row";
     row.split("").forEach(letter => {
       const key = document.createElement("button");
       key.className = "key";
       key.textContent = letter === "⌫" ? "⌫" : letter;
       key.onclick = () => letter === "⌫" ? handleDelete() : handleKey(letter);
-      keyboard.appendChild(key);
+      keyboard.appendChild(rowDiv);
+      rowDiv.appendChild(key);
     });
+    keyboard.appendChild(rowDiv);
   });
 }
 
@@ -104,7 +105,6 @@ document.getElementById("enterBtn").addEventListener("click", () => {
       }
 
       guesses.push(currentGuess);
-
       if (currentGuess === word) {
         endGame(true);
       } else if (guesses.length === maxGuesses) {
@@ -119,10 +119,11 @@ document.getElementById("enterBtn").addEventListener("click", () => {
 function endGame(won) {
   gameOver = true;
   renderBoard();
-  const msg = won
+
+  const message = won
     ? "🎉 Congratulations, you got today’s word!"
     : `❌ The word was ${word}`;
-  document.getElementById("endMessage").textContent = msg;
+  document.getElementById("endMessage").textContent = message;
   document.getElementById("endMessage").style.display = "block";
   document.getElementById("shareBtn").style.display = "inline-block";
   document.getElementById("randomBtn").style.display = "inline-block";
@@ -131,49 +132,47 @@ function endGame(won) {
 function shareResult() {
   let summary = `McWallace Wordle 🟩🟨⬛\n\n`;
   guesses.forEach(g => {
-    const status = getTileStatus(g);
     for (let i = 0; i < 5; i++) {
-      if (status[i] === "correct") summary += "🟩";
-      else if (status[i] === "present") summary += "🟨";
+      if (g[i] === word[i]) summary += "🟩";
+      else if (word.includes(g[i])) summary += "🟨";
       else summary += "⬛";
     }
     summary += "\n";
   });
-  summary += `\nTry it today: https://wallace-wordle.onrender.com`;
+  summary += "\nTry it today: https://wallace-wordle.onrender.com";
 
   navigator.clipboard.writeText(summary).then(() => {
     alert("Result copied to clipboard!");
   });
 }
 
-// NEW version that handles duplicate letters properly
-function getTileStatus(guess, index = null) {
-  let result = Array(5).fill("absent");
-  const wordArr = word.split("");
-  const guessArr = guess.split("");
-  const letterCount = {};
+function getTileStatus(letter, index, guess) {
+  if (letter === word[index]) return "correct";
 
-  // Track letters in target word
-  for (let char of wordArr) {
-    letterCount[char] = (letterCount[char] || 0) + 1;
+  const wordLetters = word.split("");
+  const guessLetterCounts = {};
+  const wordLetterCounts = {};
+
+  // Count letters in the word
+  for (let i = 0; i < word.length; i++) {
+    const l = word[i];
+    wordLetterCounts[l] = (wordLetterCounts[l] || 0) + 1;
   }
 
-  // First pass: exact matches
-  for (let i = 0; i < 5; i++) {
-    if (guessArr[i] === wordArr[i]) {
-      result[i] = "correct";
-      letterCount[guessArr[i]]--;
+  // Count letters in correct position
+  for (let i = 0; i < guess.length; i++) {
+    const l = guess[i];
+    if (l === word[i]) {
+      guessLetterCounts[l] = (guessLetterCounts[l] || 0) + 1;
     }
   }
 
-  // Second pass: present but not exact
-  for (let i = 0; i < 5; i++) {
-    if (result[i] === "correct") continue;
-    if (letterCount[guessArr[i]] > 0) {
-      result[i] = "present";
-      letterCount[guessArr[i]]--;
+  if (word.includes(letter)) {
+    const alreadyCounted = guessLetterCounts[letter] || 0;
+    if (alreadyCounted < wordLetterCounts[letter]) {
+      return "present";
     }
   }
 
-  return index !== null ? result[index] : result;
+  return "absent";
 }
